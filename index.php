@@ -1,18 +1,11 @@
 <?php 
 
-echo "Hello, PHP!";
+require_once 'initSession.php';
+require_once 'sessionManager.php';
 
-// Create connection
-$con=mysqli_connect('rsadak.com', 'rsadak', 'Whistle', 'rsadak_betting');
-//$con=mysqli_connect('localhost', 'rsadak', 'Whistle', 'rsadak_betting');
-
-// Check connection
-if( mysqli_connect_errno()){
-	echo "Error: ";
-	echo mysqli_connect_errno();
-}
-else{
-	echo "Success";
+$current_user = SessionManager::getInstance()->getCurrentUser(); 
+if($current_user){
+	echo "Hello, ".$current_user->getName();
 }
 
 ?>
