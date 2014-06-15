@@ -4,12 +4,14 @@ class FootballLeague{
 	
 	private $id;
 	private $updated_time;
+	private $created_time;
 	private $name;
 	private $creator_id;
 	
 	public function __construct(){
 		$this->id = -1;
 		$this->updated_time = 0;
+		$this->created_time = 0;
 		$this->name = "";
 		$this->creator_id = -1;
 	}
@@ -21,12 +23,18 @@ class FootballLeague{
 	public function initFromDbEntry($db_entry){
 		$this->id = $db_entry["ID"];
 		$this->updated_time = $db_entry["UpdatedTime"];
+		$this->created_time = $db_entry["CreatedTime"];
 		$this->name = $db_entry["Name"];
 		$this->creator_id = $db_entry["CreatorId"];
 	}
 	
 	public function getId(){
 		return $this->id;
+	}
+	
+	public function getCreatedTime(){
+		$dt = new DateTime($this->created_time);  // convert UNIX timestamp to PHP DateTime
+		return $dt->format('H:i:s Y-m-d');
 	}
 	
 	public function getUpdatedTime(){

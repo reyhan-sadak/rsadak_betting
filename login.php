@@ -3,11 +3,20 @@
 require_once 'initSession.php';
 require_once 'sessionManager.php';
 
+function loginForm($email="", $userNameMessage="", $passwordMessage=""){
+	echo '<form action="login.php" method="post">
+	E-mail: <input type="email" name="email" value="'.$email.'">'.$userNameMessage.' <br>
+	Password: <input type="password" name="password">'.$passwordMessage.'<br>
+	<input type="submit" value="Login">
+	<a href="register.php"><button type="button">Register</button></a>
+	</form>';
+}
+
 $current_user = SessionManager::getInstance()->getCurrentUser();
 if($current_user){
 	// redirect to the main page
 	header("Location: index.php");
-	exit();
+	die();
 }
 
 echo
@@ -18,7 +27,7 @@ echo
 <body>';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
-	$name = $pass = "";
+	$email = $pass = "";
 	
 	if(isset($_POST["email"])){
 		$email = $_POST["email"];
@@ -37,13 +46,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	}
 	
 	$error = SessionManager::getInstance()->login($email, $pass);
+	if($error == HttpStatus::$HTTP_STATUS_UNAUTHORIZED){
+		loginForm($email, "", "Incorrect password");
+	} else if($error == HttpStatus::$HTTP_STATUS_NOT_FOUND){
+		loginForm($email, "Incorrect email");
+	} else if($error == HttpStatus::$HTTP_STATUS_OK){
+		header("Location: index.php");
+		die();
+	}
+	echo $error;
 }
 else{
-echo '<form action="login.php" method="post">
-E-mail: <input type="text" name="email"><br>
-Password: <input type="password" name="password"><br>
-<input type="submit">
-</form>';
+	loginForm();
 }
 
 echo

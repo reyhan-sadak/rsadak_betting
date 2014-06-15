@@ -3,6 +3,16 @@
 require_once 'initSession.php';
 require_once 'sessionManager.php';
 
+function registerForm(){
+	echo '<form action="register.php" method="post">
+	Name: <input type="text" name="name"><br>
+	E-mail: <input type="email" name="email_register"><br>
+	Password: <input type="password" name="password_register"><br>
+	Repeat Password: <input type="password" name="repeat_password"><br>
+	<input type="submit">
+	</form>';
+}
+
 $current_user = SessionManager::getInstance()->getCurrentUser();
 if($current_user){
 	// redirect to the main page
@@ -18,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	$name = $email = $pass = $repeat_pass = "";
 	if(isset($_POST["name"])){
 		$name = $_POST["name"];
-		if(!User::isNameValid($name)){
+		if(!SessionManager::isNameValid($name)){
 			$name = "";
 			$name_err = "Name is not valid";
 		}
@@ -26,9 +36,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 		$name_err = "Name is required";
 	}
 	
-	if(isset($_POST["email"])){
-		$email = $_POST["email"];
-		if(!User::isEmailValid($email)){
+	if(isset($_POST["email_register"])){
+		$email = $_POST["email_register"];
+		if(!SessionManager::isEmailValid($email)){
 			$email = "";
 			$email_err = "Email is not valid";
 		}
@@ -36,8 +46,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 		$email_err = "Email is required";
 	}
 	
-	if(isset($_POST["password"])){
-		$pass = $_POST["password"];
+	if(isset($_POST["password_register"])){
+		$pass = $_POST["password_register"];
 	}else{
 		$pass_err = "Password is required";
 	}
@@ -53,7 +63,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	}
 	
 	if($name_err === "" && $email_err === "" && $pass_err === "" && $repeat_pass_err === ""){
-		echo SessionManager::getInstance()->register($email, $pass, $repeat_pass, $name);
+		$error = SessionManager::getInstance()->register($email, $pass, $repeat_pass, $name);
+		if($error == HttpStatus::$HTTP_STATUS_OK){
+			header("Location: index.php");
+			exit();
+		}else if($error == HttpStatus::$HTTP_STATUS_BAD_REQUEST){
+			registerForm();
+		}
+		else if($error == HttpStatus::$HTTP_STATUS_INTERNAL_SERVER_ERROR){
+			registerForm();
+		}
+		echo $error;
 	}
 	else{
 		echo $name_err."<br>";
@@ -64,13 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	
 }
 else{
-echo '<form action="register.php" method="post">
-Name: <input type="text" name="name"><br>
-E-mail: <input type="text" name="email"><br>
-Password: <input type="password" name="password"><br>
-Repeat Password: <input type="password" name="repeat_password"><br>
-<input type="submit">
-</form>';
+	registerForm();
 }
 
 echo '</body>
