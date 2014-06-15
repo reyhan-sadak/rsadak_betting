@@ -1,12 +1,10 @@
 <?php
 
 require_once 'databaseManager.php';
-require_once 'httpStatus.php';
+require_once 'utils/httpStatus.php';
 
-if(true)//!isset($_COOKIE["PHPSESSID"]))
-{
-	session_start();
-}
+
+session_start();
 
 class SessionManager{
 	
@@ -117,11 +115,20 @@ class SessionManager{
 	public function teamWithNameForLeagueExists($team_name, $league_id){
 		$teamsWithName = DatabaseManager::getInstance()->getTeamsByName($team_name);
 		foreach ($teamsWithName as $team){
-			if($team->getName() == $team_name){
+			if($team->getLeagueId() == $league_id){
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	public function gameGroupWithNameExists($game_group_name){
+		$game_group = DatabaseManager::getInstance()->getGameGroupByName($game_group_name);
+		if($game_group){
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 	public function getCurrentUser(){
@@ -188,6 +195,16 @@ class SessionManager{
 		$current_user = $this->getCurrentUser();
 		if($current_user){
 			DatabaseManager::getInstance()->addNewTeamForLeague($team_name, $league_id, $current_user->getId());
+			return HttpStatus::$HTTP_STATUS_OK;
+		}else{
+			return HttpStatus::$HTTP_STATUS_UNAUTHORIZED;
+		}
+	}
+	
+	public function addNewGameGroup($name, $from_date, $to_date){
+		$current_user = $this->getCurrentUser();
+		if($current_user){
+			DatabaseManager::getInstance()->addNewGameGroup($name, $from_date, $to_date, $current_user->getId());
 			return HttpStatus::$HTTP_STATUS_OK;
 		}else{
 			return HttpStatus::$HTTP_STATUS_UNAUTHORIZED;

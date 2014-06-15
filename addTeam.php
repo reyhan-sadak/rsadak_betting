@@ -1,6 +1,7 @@
 <?php
 
 require_once 'utils/functions.php';
+require_once 'basePage.php';
 
 function addTeamForm($leagues, $team_name_error){
 	echo '<form action="addTeam.php" method="post" id="teamForm">
@@ -16,6 +17,9 @@ function addTeamForm($leagues, $team_name_error){
 	
 redirectIfNotModerator();
 
+pageHeader();
+controlPanel();
+
 $leagues_array = array();
 $leagues = DatabaseManager::getInstance()->getAllLeagues();
 foreach ($leagues as $league){
@@ -29,13 +33,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 		$team_name = $_POST["team_name"];
 		if(SessionManager::getInstance()->leagueWithIdExists($league_id)){
 			if(SessionManager::getInstance()->teamWithNameForLeagueExists($team_name, $league_id)){
-				// team name for this league already exists
+				$team_name_error = "Team ".$team_name." already exists in this league!";
+				addTeamForm($leagues_array, $team_name_error);
 			}else{
 				$error = SessionManager::getInstance()->addNewTeam($team_name, $league_id);
 				if($error == HttpStatus::$HTTP_STATUS_UNAUTHORIZED){
-					redirect("login.php");
+					redirect("login.php", "Please login!");
 				}else{
-					redirect();
+					redirect("viewTeams.php");
 				}
 			}
 		}else{
@@ -43,10 +48,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 		}
 	}else{
 		$team_name_error = "Team name should not be empty!";
-		addTeamForm($leagues_array, $league_name_error);
+		addTeamForm($leagues_array, $team_name_error);
 	}
 }else{
 	addTeamForm($leagues_array, "");
 }
+
+pageFooter();
 
 ?>

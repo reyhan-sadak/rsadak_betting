@@ -1,6 +1,6 @@
 <?php
 
-require_once 'medoo.php';
+require_once 'framework/medoo.php';
 require_once 'model/User.php';
 require_once 'model/footballLeague.php';
 require_once 'model/footballTeam.php';
@@ -173,7 +173,7 @@ class DatabaseManager{
 	}
 	
 	public function getTeamById($team_id){
-		$datas = $this->database->select("",
+		$datas = $this->database->select("FootballTeams",
 				[
 					"ID",
 					"Name",
@@ -196,7 +196,7 @@ class DatabaseManager{
 	}
 	
 	public function  getTeamsByName($team_name){
-		$datas = $this->database->select("",
+		$datas = $this->database->select("FootballTeams",
 				[
 				"ID",
 				"Name",
@@ -206,7 +206,7 @@ class DatabaseManager{
 				"CreatedTime",
 				],
 				[
-				"ID" => $team_id
+				"Name" => $team_name
 				]);
 		$teams = array();
 		foreach ($datas as $data){
@@ -215,6 +215,31 @@ class DatabaseManager{
 			if($team->getName() == $team_name){
 				$teams[] = $team;
 			}
+		}
+		return $teams;
+	}
+	
+	public function getAllTeams($league_id=null){
+		$filter = array();
+		if($league_id != null){
+			$filter["LeagueId"] = (int)$league_id;
+		}
+		$datas = $this->database->select("FootballTeams",
+				[
+				"ID",
+				"Name",
+				"LeagueId",
+				"CreatorId",
+				"UpdatedTime",
+				"CreatedTime",
+				],
+				$filter
+				);
+		$teams = array();
+		foreach ($datas as $data){
+			$team = new FootballTeam();
+			$team->initFromDbEntry($data);
+			$teams[] = $team;
 		}
 		return $teams;
 	}
@@ -238,6 +263,31 @@ class DatabaseManager{
 			$match_group = new MatchGroup();
 			$match_group->initFromDbEntry($data);
 			if($match_group->getId() == (int)$game_group_id){
+				return $match_group;
+			}
+		}
+		return null;
+	}
+	
+	public function getGameGroupByName($game_group_name){
+		$datas = $this->database->select("MatchGroups",
+				[
+				"ID",
+				"Name",
+				"FromDate",
+				"ToDate",
+				"CreatorId",
+				"UpdatedTime",
+				"CreatedTime"
+				],
+				[
+				"Name" => $game_group_name
+				]
+		);
+		foreach ($datas as $data){
+			$match_group = new MatchGroup();
+			$match_group->initFromDbEntry($data);
+			if($match_group->getName() == $game_group_name){
 				return $match_group;
 			}
 		}
@@ -289,16 +339,19 @@ class DatabaseManager{
 				]);
 	}
 	
-	public function addNewGameGroup($name, $from_data, $to_date, $creator_id){
+	public function addNewGameGroup($name, $from_date, $to_date, $creator_id){
 		$datetime = date('Y-m-d H:i:s');
+		$from_date_db = $from_date->format('Y-m-d H:i:s');
+		$to_date_db = $to_date->format('Y-m-d H:i:s');
 		$new_group_id = $this->database->insert("MatchGroups",
 				[
 					"Name" => $name,
-					"FromData" => $from_data,
-					"ToDate" => $to_date,
+					"FromDate" => $from_date_db,
+					"ToDate" => $to_date_db,
 					"CreatorId" => $creator_id,
 					"UpdatedTime" => $datetime
 				]);
+		return $new_group_id;
 	}
 	
 	public static function getInstance(){

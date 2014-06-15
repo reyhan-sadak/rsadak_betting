@@ -1,7 +1,8 @@
 <?php
 
-require_once 'initSession.php';
-require_once 'sessionManager.php';
+require_once 'managers/sessionManager.php';
+require_once 'utils/functions.php';
+require_once 'basePage.php';
 
 function registerForm(){
 	echo '<form action="register.php" method="post">
@@ -9,19 +10,13 @@ function registerForm(){
 	E-mail: <input type="email" name="email_register"><br>
 	Password: <input type="password" name="password_register"><br>
 	Repeat Password: <input type="password" name="repeat_password"><br>
-	<input type="submit">
+	<input type="submit" value="Register">
 	</form>';
 }
 
-$current_user = SessionManager::getInstance()->getCurrentUser();
-if($current_user){
-	// redirect to the main page
-	header("Location: index.php");
-	exit();
-}
+redirectIfAuthorized();
 
-echo '<html>
-<body>';
+pageHeader();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	$name_err = $email_err = $pass_err = $repeat_pass_err = "";
@@ -87,7 +82,6 @@ else{
 	registerForm();
 }
 
-echo '</body>
-</html>';
+pageFooter();
 
 ?>

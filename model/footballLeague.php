@@ -1,5 +1,7 @@
 <?php
 
+require_once 'managers/databaseManager.php';
+
 class FootballLeague{
 	
 	private $id;
@@ -48,6 +50,15 @@ class FootballLeague{
 	
 	public function getCreatorId(){
 		return $this->creator_id;
+	}
+	
+	public function getCreatorName(){
+		$creator = DatabaseManager::getInstance()->getUserById($this->getCreatorId());
+		if($creator){
+			return $creator->getName();
+		}else{
+			return "Not found";
+		}
 	}
 }
 ?>

@@ -16,8 +16,8 @@ class MatchGroup{
 		$this->created_time = 0;
 		$this->name = "";
 		$this->creator_id = -1;
-		$this->from_date = new Date();
-		$this->to_date = new Date();
+		$this->from_date = 0;
+		$this->to_date = 0;
 	}
 	
 	public function  __destruct(){

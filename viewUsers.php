@@ -1,8 +1,12 @@
 <?php
 
 require_once 'utils/functions.php';
+require_once 'basePage.php';
 
 static $users_per_page = 10;
+
+pageHeader();
+controlPanel();
 
 echo '<script src="functions.js"></script>';
 
@@ -51,6 +55,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 }
 $users = DatabaseManager::getInstance()->getAllUsers();
 
-usersTable($users, $page_number, $users_per_page)
+usersTable($users, $page_number, $users_per_page);
+
+pageFooter();
 
 ?>

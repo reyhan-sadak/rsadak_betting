@@ -1,7 +1,8 @@
 <?php
 
-require_once 'initSession.php';
-require_once 'sessionManager.php';
+require_once 'managers/sessionManager.php';
+require_once 'utils/functions.php';
+require_once 'basePage.php';
 
 function loginForm($email="", $userNameMessage="", $passwordMessage=""){
 	echo '<form action="login.php" method="post">
@@ -12,19 +13,9 @@ function loginForm($email="", $userNameMessage="", $passwordMessage=""){
 	</form>';
 }
 
-$current_user = SessionManager::getInstance()->getCurrentUser();
-if($current_user){
-	// redirect to the main page
-	header("Location: index.php");
-	die();
-}
+redirectIfAuthorized();
 
-echo
-'<html>
-<head>
-</head>
-
-<body>';
+pageHeader();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	$email = $pass = "";
@@ -49,19 +40,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	if($error == HttpStatus::$HTTP_STATUS_UNAUTHORIZED){
 		loginForm($email, "", "Incorrect password");
 	} else if($error == HttpStatus::$HTTP_STATUS_NOT_FOUND){
-		loginForm($email, "Incorrect email");
+		loginForm($email, "Email not found. Please register.");
 	} else if($error == HttpStatus::$HTTP_STATUS_OK){
 		header("Location: index.php");
 		die();
 	}
-	echo $error;
 }
 else{
 	loginForm();
 }
 
-echo
-'</body>
-</html>';
+pageFooter();
 
 ?>
