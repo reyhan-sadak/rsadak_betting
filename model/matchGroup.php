@@ -56,6 +56,15 @@ class MatchGroup{
 		return $this->creator_id;
 	}
 	
+	public function getCreatorName(){
+		$creator = DatabaseManager::getInstance()->getUserById($this->getCreatorId());
+		if($creator){
+			return $creator->getName();
+		}else{
+			return "Not found";
+		}
+	}
+	
 	public function getFromDate(){
 		return $this->from_date;
 	}

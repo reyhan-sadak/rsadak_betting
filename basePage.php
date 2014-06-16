@@ -3,6 +3,8 @@
 require_once 'managers/sessionManager.php';
 require_once 'utils/functions.php';
 
+static $scriptsFolder = "js";
+
 static $noUserControlPanel = array(
 			array("login.php", "Login"),
 			array("register.php", "Register")
@@ -24,7 +26,7 @@ static $moderatorControlPanel = array(
 			array("viewLeagues.php", "View Leagues"),
 			array("viewTeams.php", "View Teams"),
 			array("viewGroups.php", "View Groups"),
-			array("viewFootballGames.php", "View FootballMatches"),
+			array("viewFootballGames.php", "View Games"),
 		);
 static $adminControlPanel = array(
 			array("viewUsers.php", "View users")
@@ -106,6 +108,14 @@ function controlPanel(){
 	echo '</tr>';
 	echo '</table>';
 	echo '</div>';
+}
+
+function addScripts($scriptnames){
+	global $scriptsFolder;
+	echo '<script src="'.$scriptsFolder.'/'.'jquery-2.1.1.js"></script>';
+	foreach ($scriptnames as $scriptname){
+		echo '<script src="'.$scriptsFolder.'/'.$scriptname.'.js"></script>';
+	}
 }
 
 ?>

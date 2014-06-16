@@ -294,6 +294,27 @@ class DatabaseManager{
 		return null;
 	}
 	
+	public function getAllGroups(){
+		$datas = $this->database->select("MatchGroups",
+				[
+				"ID",
+				"Name",
+				"FromDate",
+				"ToDate",
+				"CreatorId",
+				"UpdatedTime",
+				"CreatedTime"
+				]
+		);
+		$match_groups = array();
+		foreach ($datas as $data){
+			$match_group = new MatchGroup();
+			$match_group->initFromDbEntry($data);
+			$match_groups[] = $match_group;
+		}
+		return $match_groups;
+	}
+	
 	public function setUserHashForUser($user_hash, $user_id){
 		$this->database->update("Users", [
 				"UserHash" => $user_hash
@@ -352,6 +373,20 @@ class DatabaseManager{
 					"UpdatedTime" => $datetime
 				]);
 		return $new_group_id;
+	}
+	
+	public function addNewGame($group_id, $host_team_id, $guest_team_id, $creator_id){
+		$datetime = date('Y-m-d H:i:s');
+		$new_game_id = $this->database->insert("FootballMatches",
+				[
+					"HostTeamId" => (int)$host_team_id,
+					"GuestTeamId" => (int)$guest_team_id,
+					"MatchGroupId" => $group_id,
+					"CreatorId" => $creator_id,
+					"UpdatedTime" => $datetime
+				]
+				);
+		return $new_game_id;
 	}
 	
 	public static function getInstance(){

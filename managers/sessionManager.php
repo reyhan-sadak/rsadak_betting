@@ -211,6 +211,29 @@ class SessionManager{
 		}
 	}
 	
+	public function addNewGame($group_id, $host_team_id, $guest_team_id){
+		$group = DatabaseManager::getInstance()->getGameGroupById($group_id);
+		$host_team = DatabaseManager::getInstance()->getTeamById($host_team_id);
+		$guest_team = DatabaseManager::getInstance()->getTeamById($guest_team_id);
+		if($group == null || $host_team == null || $guest_team == null){
+			return HttpStatus::$HTTP_STATUS_NOT_FOUND;
+		}
+		if($host_team_id == $guest_team_id){
+			return HttpStatus::$HTTP_STATUS_CONFLICT;
+		}
+		$current_user = $this->getCurrentUser();
+		if($current_user){
+			if($current_user->isModerator()){
+				DatabaseManager::getInstance()->addNewGame($group_id, $host_team_id, $guest_team_id, $current_user->getId());
+				return HttpStatus::$HTTP_STATUS_OK;
+			}else {
+				return HttpStatus::$HTTP_STATUS_FORBIDDEN;
+			}
+		}else {
+			return HttpStatus::$HTTP_STATUS_UNAUTHORIZED;
+		}
+	}
+	
 	public static function getInstance(){
 		if(!isset(self::$_singleton_)){
 			self::$_singleton_ = new SessionManager();

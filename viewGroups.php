@@ -3,30 +3,37 @@
 require_once 'basePage.php';
 require_once 'utils/functions.php';
 
-function leaguesTable($leagues){
-	echo '<table id="leaguesTable" border=1>';
+function groupsTable($groups){
+	echo '<table id="groupesTable" border=1>';
 	echo '<tr>';
 	echo '<th>Name</th>';
+	echo '<th>From date</th>';
+	echo '<th>To Date</th>';
 	echo '<th>Creator</th>';
 	echo '<th>Created</th>';
 	echo '<th>Last Updated</th>';
 	echo '</tr>';
-	foreach ($leagues as $league){
+	foreach ($groups as $group){
 		echo '<tr>';
-		echo '<th>'.$league->getName().'</th>';
-		echo '<th>'.$league->getCreatorName().'</th>';
-		echo '<th>'.$league->getCreatedTime().'</th>';
-		echo '<th>'.$league->getUpdatedTime().'</th>';
+		echo '<th>'.$group->getName().'</th>';
+		echo '<th>'.$group->getFromDate().'</th>';
+		echo '<th>'.$group->getToDate().'</th>';
+		echo '<th>'.$group->getCreatorName().'</th>';
+		echo '<th>'.$group->getCreatedTime().'</th>';
+		echo '<th>'.$group->getUpdatedTime().'</th>';
+		echo '<th><button type="button" onclick="addFootballGame('.$group->getId().')">Add game</button></th>';
+		echo '<th><button type="button" onclick="viewFootballGames('.$group->getId().')">View games</button></th>';
 		echo '</tr>';
 	}
 	echo '</table>';
 }
 
 pageHeader();
+addScripts(["functions"]);
 controlPanel();
 
-$leagues = DatabaseManager::getInstance()->getAllLeagues();
-leaguesTable($leagues);
+$groups = DatabaseManager::getInstance()->getAllGroups();
+groupsTable($groups);
 
 pageFooter();
 

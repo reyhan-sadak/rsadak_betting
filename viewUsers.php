@@ -8,7 +8,7 @@ static $users_per_page = 10;
 pageHeader();
 controlPanel();
 
-echo '<script src="functions.js"></script>';
+addScripts(["functions"]);
 
 function usersTable($users, $page_number, $page_entries){
 	$users_count = count($users);
