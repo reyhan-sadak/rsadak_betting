@@ -12,6 +12,7 @@ function groupsTable($groups){
 	echo '<th>Creator</th>';
 	echo '<th>Created</th>';
 	echo '<th>Last Updated</th>';
+	echo '<th>Visible</th>';
 	echo '</tr>';
 	foreach ($groups as $group){
 		echo '<tr>';
@@ -21,6 +22,11 @@ function groupsTable($groups){
 		echo '<th>'.$group->getCreatorName().'</th>';
 		echo '<th>'.$group->getCreatedTime().'</th>';
 		echo '<th>'.$group->getUpdatedTime().'</th>';
+		if($group->isVisible()){
+			echo '<th>Yes</th>';
+		}else{
+			echo '<th>No</th>';
+		}
 		echo '<th><button type="button" onclick="addFootballGame('.$group->getId().')">Add game</button></th>';
 		echo '<th><button type="button" onclick="viewFootballGames('.$group->getId().')">View games</button></th>';
 		echo '</tr>';
@@ -32,7 +38,7 @@ pageHeader();
 addScripts(["functions"]);
 controlPanel();
 
-$groups = DatabaseManager::getInstance()->getAllGroups();
+$groups = DatabaseManager::getInstance()->getAllGroups(null, true);
 groupsTable($groups);
 
 pageFooter();

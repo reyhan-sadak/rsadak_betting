@@ -12,8 +12,7 @@ static $noUserControlPanel = array(
 
 static $normalUserControlPanel = array(
 			array("logout.php", "Logout"),
-			array("index.php", "Home"),
-			array("myBets.php", "My Bets")
+			array("index.php", "Home")
 		);
 static $moderatorControlPanel = array(
 			// new content
@@ -36,6 +35,8 @@ function pageHeader(){
 	echo
 	'<html>
 	<header>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
 	</header>
 	<body>';
 	showHeaderMessage();
@@ -116,6 +117,40 @@ function addScripts($scriptnames){
 	foreach ($scriptnames as $scriptname){
 		echo '<script src="'.$scriptsFolder.'/'.$scriptname.'.js"></script>';
 	}
+}
+
+function datePickerScript($inputIds=[]){
+	if(count($inputIds)==0){
+		$inputIds[] = "datepicker";
+	}
+	echo '
+	<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+	<script>
+	$(function() {';
+	foreach($inputIds as $inputId){
+		echo '$( "#'.$inputId.'" ).datepicker();';
+	}
+	echo '});
+	</script>
+	';
+}
+
+function getSortedMatchGroups(){
+	$started_groups = DatabaseManager::getInstance()->getAllGroups(DatabaseManager::$MATCH_GROUP_STATUS_STARTED);
+	$upcoming_groups = DatabaseManager::getInstance()->getAllGroups(DatabaseManager::$MATCH_GROUP_STATUS_UPCOMING);
+	$ended_groups = DatabaseManager::getInstance()->getAllGroups(DatabaseManager::$MATCH_GROUP_STATUS_ENDED);
+	$result = array();
+	foreach ($started_groups as $started_group){
+		$result[] = $started_group;
+	}
+	foreach ($upcoming_groups as $upcoming_group){
+		$result[] = $upcoming_group;
+	}
+	foreach ($ended_groups as $ended_group){
+		$result[] = $ended_group;
+	}
+	return $result;
 }
 
 ?>

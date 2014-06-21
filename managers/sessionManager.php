@@ -87,10 +87,11 @@ class SessionManager{
 	}
 	
 	public static function isEmailValid($email){
-		return preg_match("/([\w\-]+\@[\w\-]+\.[\w\-]+)/",$email);
+		return self::isGameloftEmail($email);
+		//return preg_match("/([\w\-]+\@[\w\-]+\.[\w\-]+)/",$email);
 	}
 	
-	private function isGameloftEmail($email){
+	private static function isGameloftEmail($email){
 		return preg_match("/([\w\-]+\@gameloft.[\w\-]+)/",$email);
 	}
 	
@@ -125,6 +126,24 @@ class SessionManager{
 	public function gameGroupWithNameExists($game_group_name){
 		$game_group = DatabaseManager::getInstance()->getGameGroupByName($game_group_name);
 		if($game_group){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	public function gameWithIdExist($game_id){
+		$game = DatabaseManager::getInstance()->getGameById($game_id);
+		if($game){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	public function predictionForGameOfUserExists($game_id, $user_id){
+		$prediction = DatabaseManager::getInstance()->getPredictionForGameOfUser($game_id, $user_id);
+		if($prediction){
 			return true;
 		}else{
 			return false;
@@ -211,7 +230,7 @@ class SessionManager{
 		}
 	}
 	
-	public function addNewGame($group_id, $host_team_id, $guest_team_id){
+	public function addNewGame($group_id, $host_team_id, $guest_team_id, $date_time){
 		$group = DatabaseManager::getInstance()->getGameGroupById($group_id);
 		$host_team = DatabaseManager::getInstance()->getTeamById($host_team_id);
 		$guest_team = DatabaseManager::getInstance()->getTeamById($guest_team_id);
@@ -224,12 +243,39 @@ class SessionManager{
 		$current_user = $this->getCurrentUser();
 		if($current_user){
 			if($current_user->isModerator()){
-				DatabaseManager::getInstance()->addNewGame($group_id, $host_team_id, $guest_team_id, $current_user->getId());
+				DatabaseManager::getInstance()->addNewGame($group_id, $host_team_id, $guest_team_id, $current_user->getId(), $date_time);
 				return HttpStatus::$HTTP_STATUS_OK;
 			}else {
 				return HttpStatus::$HTTP_STATUS_FORBIDDEN;
 			}
 		}else {
+			return HttpStatus::$HTTP_STATUS_UNAUTHORIZED;
+		}
+	}
+	
+	public function updateGame($game_id, $host_score, $guest_score){
+		if($this->gameWithIdExist($game_id)){
+			$result = DatabaseManager::getInstance()->updateGame($game_id, $host_score, $guest_score);
+			if($result >= 0){
+				$game = DatabaseManager::getInstance()->getGameById($game_id);
+				return $game;
+			}else {
+				return null;
+			}
+		}
+		return null;
+	}
+	
+	public function createGamePrediction($game_id, $host_score, $guests_score){
+		$current_user = $this->getCurrentUser();
+		if($current_user){
+			if($this->predictionForGameOfUserExists($game_id, $current_user->getId())){
+				DatabaseManager::getInstance()->updateGamePrediction($game_id, $current_user->getId(), $host_score, $guests_score);
+			}else{
+				DatabaseManager::getInstance()->createGamePrediction($game_id, $current_user->getId(), $host_score, $guests_score);
+			}
+			return HttpStatus::$HTTP_STATUS_OK;
+		}else{
 			return HttpStatus::$HTTP_STATUS_UNAUTHORIZED;
 		}
 	}

@@ -9,6 +9,7 @@ class MatchGroup{
 	private $creator_id;
 	private $from_date;
 	private $to_date;
+	private $visible;
 	
 	public function __construct(){
 		$this->id = -1;
@@ -18,6 +19,7 @@ class MatchGroup{
 		$this->creator_id = -1;
 		$this->from_date = 0;
 		$this->to_date = 0;
+		$this->visible = 1;
 	}
 	
 	public function  __destruct(){
@@ -32,6 +34,7 @@ class MatchGroup{
 		$this->creator_id = $db_entry["CreatorId"];
 		$this->from_date = $db_entry["FromDate"];
 		$this->to_date = $db_entry["ToDate"];
+		$this->visible = $db_entry["Visible"];
 	}
 	
 	public function getId(){
@@ -71,6 +74,10 @@ class MatchGroup{
 	
 	public function getToDate(){
 		return $this->to_date;
+	}
+	
+	public function isVisible(){
+		return $this->visible;
 	}
 }
 

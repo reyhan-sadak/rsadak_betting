@@ -15,8 +15,8 @@ function teamsTable($teams){
 	foreach ($teams as $team){
 		echo '<tr>';
 		echo '<th>'.$team->getName().'</th>';
-		echo '<th>'.$team->getCreatorName().'</th>';
 		echo '<th>'.$team->getLeagueName().'</th>';
+		echo '<th>'.$team->getCreatorName().'</th>';
 		echo '<th>'.$team->getCreatedTime().'</th>';
 		echo '<th>'.$team->getUpdatedTime().'</th>';
 		echo '</tr>';

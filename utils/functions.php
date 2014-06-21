@@ -65,4 +65,18 @@ function getFileNameFromFilePath($filePath){
 	}
 }
 
+function isScoreWinnerCorrect($host_score, $guest_score, $host_prediction, $guest_prediction){
+	if($host_score == null || $guest_score == null){
+		return false;
+	}else{
+		$score_diff = $host_score - $guest_score;
+		$pred_diff = $host_prediction - $guest_prediction;
+		return ($score_diff * $pred_diff ) > 0;
+	}
+}
+
+function isScoreCorrect($host_score, $guest_score, $host_prediction, $guest_prediction){
+	return ($host_score == $host_prediction) && ($guest_score == $guest_prediction);
+}
+
 ?>

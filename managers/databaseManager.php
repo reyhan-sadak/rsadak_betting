@@ -5,14 +5,24 @@ require_once 'model/User.php';
 require_once 'model/footballLeague.php';
 require_once 'model/footballTeam.php';
 require_once 'model/matchGroup.php';
+require_once 'model/footballMatch.php';
+require_once 'model/footballMatchPrediction.php';
 
 class DatabaseManager{
+	
+	public static $MATCH_GROUP_STATUS_ENDED = 1;
+	public static $MATCH_GROUP_STATUS_STARTED = 2;
+	public static $MATCH_GROUP_STATUS_UPCOMING = 3;
 	
 	private  $database;
 	private static $_singleton_;
 	
 	private function __construct(){
+		try {
 			$this->database = new medoo();
+		} catch (Exception $e) {
+			echo $e->getMessage();
+		}
 	}
 	
 	public function __destruct(){
@@ -253,7 +263,8 @@ class DatabaseManager{
 					"ToDate",
 					"CreatorId",
 					"UpdatedTime",
-					"CreatedTime"
+					"CreatedTime",
+					"Visible"
 				],
 				[
 					"ID" => $game_group_id
@@ -262,7 +273,7 @@ class DatabaseManager{
 		foreach ($datas as $data){
 			$match_group = new MatchGroup();
 			$match_group->initFromDbEntry($data);
-			if($match_group->getId() == (int)$game_group_id){
+			if($match_group->getId() == (int)$game_group_id && $match_group->isVisible()){
 				return $match_group;
 			}
 		}
@@ -278,7 +289,8 @@ class DatabaseManager{
 				"ToDate",
 				"CreatorId",
 				"UpdatedTime",
-				"CreatedTime"
+				"CreatedTime",
+				"Visible"
 				],
 				[
 				"Name" => $game_group_name
@@ -287,14 +299,35 @@ class DatabaseManager{
 		foreach ($datas as $data){
 			$match_group = new MatchGroup();
 			$match_group->initFromDbEntry($data);
-			if($match_group->getName() == $game_group_name){
+			if($match_group->getName() == $game_group_name && $match_group->isVisible()){
 				return $match_group;
 			}
 		}
 		return null;
 	}
 	
-	public function getAllGroups(){
+	public function getAllGroups($status=null, $hidden=false){
+		$filter = array();
+		if($status){
+			$date = date('Y-m-d');
+			switch($status){
+				case self::$MATCH_GROUP_STATUS_ENDED:
+					$filter["ToDate[<]"] = $date;
+					break;
+					
+				case self::$MATCH_GROUP_STATUS_STARTED:
+					$filter_and = array();
+					$filter_and["ToDate[>=]"] = $date;
+					$filter_and["FromDate[<=]"] = $date;
+					$filter["AND"] = $filter_and;
+					break;
+						
+				case self::$MATCH_GROUP_STATUS_UPCOMING:
+					$filter["FromDate[>=]"] = $date;
+					break;
+				
+			}
+		}
 		$datas = $this->database->select("MatchGroups",
 				[
 				"ID",
@@ -303,16 +336,104 @@ class DatabaseManager{
 				"ToDate",
 				"CreatorId",
 				"UpdatedTime",
-				"CreatedTime"
-				]
+				"CreatedTime",
+				"Visible"
+				],
+				$filter
 		);
 		$match_groups = array();
 		foreach ($datas as $data){
 			$match_group = new MatchGroup();
 			$match_group->initFromDbEntry($data);
-			$match_groups[] = $match_group;
+			if($match_group->isVisible() || $hidden){
+				$match_groups[] = $match_group;
+			}
 		}
 		return $match_groups;
+	}
+	
+	public function getMatchesByGroupId($group_id=null){
+		$filter = array();
+		if($group_id){
+			$filter["MatchGroupId"] = (int)$group_id;
+		}
+		$datas = $this->database->select("FootballMatches",
+				[
+					"ID",
+					"HostTeamId",
+					"GuestTeamId",
+					"MatchGroupId",
+					"CreatorId",
+					"DateAndTime",
+					"HostScore",
+					"GuestScore",
+					"UpdatedTime",
+					"CreatedTime"
+				],
+				$filter
+		);
+		$football_matches_array = array();
+		foreach($datas as $data){
+			$football_match = new FootballMatch();
+			$football_match->initFromDbEntry($data);
+			$football_matches_array[] = $football_match;
+		}
+		return $football_matches_array;
+	}
+	
+	public function getGameById($game_id){
+		$datas = $this->database->select("FootballMatches",
+				[
+					"ID",
+					"HostTeamId",
+					"GuestTeamId",
+					"MatchGroupId",
+					"CreatorId",
+					"DateAndTime",
+					"HostScore",
+					"GuestScore",
+					"UpdatedTime",
+					"CreatedTime"
+				],
+				["ID" => $game_id]
+		);
+		foreach ($datas as $data)
+		{
+			$football_match = new FootballMatch();
+			$football_match->initFromDbEntry($data);
+			if($football_match->getId() == $game_id){
+				return $football_match;
+			}
+		}
+		return null;
+	}
+	
+	public function getPredictionForGameOfUser($game_id, $user_id){
+		$datas = $this->database->select("FootballMatchPredictions",
+			[
+				"ID",
+				"MatchId",
+				"HostScore",
+				"GuestScore",
+				"CreatorId",
+				"UpdatedTime",
+				"CreatedTime"
+			],
+			[
+				"AND" =>
+					[
+						"MatchId" => (int)$game_id,
+						"CreatorId" => (int)$user_id
+					]
+			]);
+		foreach ($datas as $data){
+			$prediction = new FootballMatchPrediction();
+			$prediction->initFromDbEntry($data);
+			if($prediction->getMatchId() == $game_id && $prediction->getCreatorId() == $user_id){
+				return $prediction;
+			}
+		}
+		return null;
 	}
 	
 	public function setUserHashForUser($user_hash, $user_id){
@@ -370,23 +491,73 @@ class DatabaseManager{
 					"FromDate" => $from_date_db,
 					"ToDate" => $to_date_db,
 					"CreatorId" => $creator_id,
-					"UpdatedTime" => $datetime
+					"UpdatedTime" => $datetime,
+					"Visible" => 1
 				]);
 		return $new_group_id;
 	}
 	
-	public function addNewGame($group_id, $host_team_id, $guest_team_id, $creator_id){
+	public function addNewGame($group_id, $host_team_id, $guest_team_id, $creator_id, $date_time){
 		$datetime = date('Y-m-d H:i:s');
+		$date_time_db = $date_time->format('Y-m-d H:i:s');
 		$new_game_id = $this->database->insert("FootballMatches",
 				[
 					"HostTeamId" => (int)$host_team_id,
 					"GuestTeamId" => (int)$guest_team_id,
 					"MatchGroupId" => $group_id,
 					"CreatorId" => $creator_id,
+					"DateAndTime" => $date_time_db,
 					"UpdatedTime" => $datetime
 				]
 				);
 		return $new_game_id;
+	}
+	
+	public function updateGame($game_id, $host_score, $guest_score){
+		$datetime = date('Y-m-d H:i:s');
+		$result = $this->database->update("FootballMatches",
+				[
+					"HostScore" => (int)$host_score,
+					"GuestScore" => (int)$guest_score,
+					"UpdatedTime" => $datetime
+				],
+				[
+					"ID" => $game_id
+				]
+			);
+		
+		return $result;
+	}
+	
+	public function createGamePrediction($game_id, $creator_id, $host_score, $guests_score){
+		$datetime = date('Y-m-d H:i:s');
+		$result = $this->database->insert("FootballMatchPredictions",
+				[
+				"MatchId" => (int)$game_id,
+				"CreatorId" => (int)$creator_id,
+				"HostScore" => (int)$host_score,
+				"GuestScore" => (int)$guests_score,
+				"UpdatedTime" => $datetime
+				]
+		);
+		
+		return $result;
+	}
+	
+	public function updateGamePrediction($game_id, $creator_id, $host_score, $guests_score){
+		$datetime = date('Y-m-d H:i:s');
+		$result = $this->database->update("FootballMatchPredictions",
+				[
+				"HostScore" => (int)$host_score,
+				"GuestScore" => (int)$guests_score,
+				"UpdatedTime" => $datetime
+				],
+				[
+				"MatchId" => $game_id
+				]
+		);
+		
+		return $result;
 	}
 	
 	public static function getInstance(){

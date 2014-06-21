@@ -1,5 +1,7 @@
 <?php
 
+require_once 'managers/databaseManager.php';
+
 class FootballMatch{
 	
 	private $id;
@@ -53,12 +55,39 @@ class FootballMatch{
 		return $this->creator_id;
 	}
 	
+	public function getCreatorName(){
+		$creator = DatabaseManager::getInstance()->getUserById($this->getCreatorId());
+		if($creator){
+			return $creator->getName();
+		}else{
+			return "Not found";
+		}
+	}
+	
 	public function getHostTeamId(){
 		return $this->host_team_id;
 	}
 	
+	public function getHostTeamName(){
+		$team = DatabaseManager::getInstance()->getTeamById($this->getHostTeamId());
+		if($team){
+			return $team->getName();
+		}else{
+			return "Unknown";
+		}
+	}
+	
 	public function getGuestTeamId(){
 		return $this->guest_team_id;
+	}
+	
+	public function getGuestTeamName(){
+		$team = DatabaseManager::getInstance()->getTeamById($this->getGuestTeamId());
+		if($team){
+			return $team->getName();
+		}else{
+			return "Unknown";
+		}
 	}
 	
 	public function getDateAndTime(){
@@ -69,12 +98,29 @@ class FootballMatch{
 		return $this->match_group_id;
 	}
 	
+	public function getMatchGroupName(){
+		$match = DatabaseManager::getInstance()->getGameGroupById($this->getMatchGroupId());
+		if($match){
+			return $match->getName();
+		}else{
+			return "Unknown";
+		}
+	}
+	
 	public function getHostScore(){
 		return $this->host_score;
 	}
 	
 	public function getGuestScore(){
 		return $this->guest_score;
+	}
+	
+	public function serializeToArray(){
+		$result = array();
+		$result["host_score"] = $this->getHostScore();
+		$result["guest_score"] = $this->getGuestScore();
+		// TODO
+		return $result;
 	}
 }
 
