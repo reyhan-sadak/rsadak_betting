@@ -16,7 +16,8 @@ static $noUserControlPanel = array(
 
 static $normalUserControlPanel = array(
 			array("logout.php", "Logout"),
-			array("changePassword.php", "Change Password")
+			array("changePassword.php", "Change Password"),
+			array("index.php", "Home")
 		);
 static $moderatorControlPanel = array(
 			// new content
