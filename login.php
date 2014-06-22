@@ -41,8 +41,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 		loginForm($email, "", "Incorrect password");
 	} else if($error == HttpStatus::$HTTP_STATUS_NOT_FOUND){
 		loginForm($email, "Email not found. Please register.");
+	}else if($error == HttpStatus::$HTTP_STATUS_FORBIDDEN){
+		loginForm($email, "Your account has been disabled.");
 	} else if($error == HttpStatus::$HTTP_STATUS_OK){
-		header("Location: index.php");
+		redirect();
 		die();
 	}
 }

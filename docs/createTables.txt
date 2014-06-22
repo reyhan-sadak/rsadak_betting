@@ -8,7 +8,9 @@ PasswordHash CHAR(128),
 UserHash CHAR(128),
 UserRank INT NOT NULL,
 UpdatedTime DATETIME,
-CreatedTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CreatedTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+Active INT,
+Predictor INT
 );
 
 CREATE TABLE FootballLeagues

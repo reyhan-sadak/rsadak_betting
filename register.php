@@ -33,7 +33,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	
 	if(isset($_POST["email_register"])){
 		$email = $_POST["email_register"];
-		if(!SessionManager::isEmailValid($email)){
+		//if(!SessionManager::isEmailValid($email)){
+		if(!SessionManager::isGameloftEmail($email)){
 			$email = "";
 			$email_err = "Email is not valid";
 		}

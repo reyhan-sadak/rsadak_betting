@@ -1,0 +1,47 @@
+@CHARSET "UTF-8";
+
+a:link {
+	color: #FFCC99 ;
+	text-decoration: none;
+}
+
+a:visited {
+	color: #FFCC99 ;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #FFCC99 ;
+	text-decoration: none;
+}
+
+a:active {
+	color: #FFCC99 ;
+	text-decoration: none;
+}
+
+#groupDiv {
+	width: 1000px;
+}
+
+#gamesDiv{
+	width: 690px;
+	float: left;
+}
+
+#leaderboardDiv{
+	width: 290px;
+	float:right;
+}
+
+#errorMessage{
+	height: 20px;
+	background-color: #FF0000;
+	text-align: center;
+}
+
+#successMessage{
+	height: 20px;
+	background-color: #33CC66;
+	text-align: center;
+}

@@ -6,6 +6,17 @@ require_once 'utils/httpStatus.php';
 
 session_start();
 
+function compareUserScores($first, $second){
+	if($first->getLdbPoints() == $second->getLdbPoints()){
+		if($first->getName() > $second->getName()){
+			return 1;
+		}
+		return -1;
+	}else{
+		return $first->getLdbPoints() - $second->getLdbPoints();
+	}
+}
+
 class SessionManager{
 	
 	private static $_singleton_;
@@ -87,11 +98,10 @@ class SessionManager{
 	}
 	
 	public static function isEmailValid($email){
-		return self::isGameloftEmail($email);
-		//return preg_match("/([\w\-]+\@[\w\-]+\.[\w\-]+)/",$email);
+		return preg_match("/([\w\-]+\@[\w\-]+\.[\w\-]+)/",$email);
 	}
 	
-	private static function isGameloftEmail($email){
+	public static function isGameloftEmail($email){
 		return preg_match("/([\w\-]+\@gameloft.[\w\-]+)/",$email);
 	}
 	
@@ -162,16 +172,7 @@ class SessionManager{
 			if($this->isEmailValid($email) && $this->doPasswordsmatch($pass, $repeat_pass)){
 				$password_hash = $this->hashPassword($pass);
 				$userHash = $this->generateUserHash($email, $name);
-				$user_id = DatabaseManager::getInstance()->addNewUser($email, $password_hash, $name, $userHash, User::$s_rank_noraml_user);
-				/*$user = DatabaseManager::getInstance()->getUserByEmail($email);
-				if($user){
-					$this->current_user = $user;
-					$this->saveCurrentUserInCookies();
-					return HttpStatus::$HTTP_STATUS_OK;
-				}
-				else{
-					return HttpStatus::$HTTP_STATUS_INTERNAL_SERVER_ERROR;
-				}*/
+				$user_id = DatabaseManager::getInstance()->addNewUser($email, $password_hash, $name, $userHash, User::$s_rank_noraml_user, 1, 1);
 				return $this->login($email, $pass);
 			}
 		}else{
@@ -183,15 +184,42 @@ class SessionManager{
 		$user = DatabaseManager::getInstance()->getUserByEmail($email);
 		if($user){
 			if($user->passwordHashMatch($pass)){
-				$this->current_user = $user;
-				$this->saveCurrentUserInCookies();
-				return HttpStatus::$HTTP_STATUS_OK;
+				if($user->isActive()){
+					$this->current_user = $user;
+					$this->saveCurrentUserInCookies();
+					return HttpStatus::$HTTP_STATUS_OK;
+				}
+				else{
+					return HttpStatus::$HTTP_STATUS_FORBIDDEN;
+				}
 			}
 			else{
 				return HttpStatus::$HTTP_STATUS_UNAUTHORIZED;
 			}
 		}else{
 			return HttpStatus::$HTTP_STATUS_NOT_FOUND;
+		}
+	}
+	
+	public function changePassword($old_password, $new_password){
+		if($old_password == $new_password){
+			return HttpStatus::$HTTP_STATUS_CONFLICT;
+		}
+		$user = $this->current_user;
+		if($user){
+			if($user->passwordHashMatch($old_password)){
+				$new_password_hash = $this->hashPassword($new_password);
+				$result = DatabaseManager::getInstance()->updatePasswordForUser($user->getId(), $new_password_hash);
+				if($result > 0){
+					return HttpStatus::$HTTP_STATUS_OK;
+				}else{
+					return HttpStatus::$HTTP_STATUS_INTERNAL_SERVER_ERROR;
+				}
+			}else{
+					return HttpStatus::$HTTP_STATUS_FORBIDDEN;
+				}
+		}else{
+			return HttpStatus::$HTTP_STATUS_UNAUTHORIZED;
 		}
 	}
 	
@@ -278,6 +306,41 @@ class SessionManager{
 		}else{
 			return HttpStatus::$HTTP_STATUS_UNAUTHORIZED;
 		}
+	}
+	
+	public function getUserPointsForMachGroup($user_id, $match_group_id){
+		$match_group = DatabaseManager::getInstance()->getMatchesByGroupId($match_group_id);
+		$user = DatabaseManager::getInstance()->getUserById($user_id);
+		$score = 0;
+		if($match_group && $user){
+			$matches = DatabaseManager::getInstance()->getMatchesByGroupId($match_group_id);
+			foreach ($matches as $match){
+				$host_score = $match->getHostScore();
+				$guest_score = $match->getGuestScore();
+				if($host_score && $guest_score){
+					$prediction = DatabaseManager::getInstance()->getPredictionForGameOfUser($match->getId(), $user_id);
+					if($prediction){
+						$host_prediction = $prediction->getHostScore();
+						$guest_prediction = $prediction->getGuestPrediction();
+						if(isScoreCorrect($host_score, $guest_score, $host_prediction, $guest_prediction)){
+							$score += 3;
+						}else if(isScoreWinnerCorrect($host_score, $guest_score, $host_prediction, $guest_prediction)){
+							$score += 1;
+						}
+					}
+				}
+			}
+		}
+		return $score;
+	}
+	
+	public function getUsersLeaderboardForMatchGroup($match_group_id){
+		$users = DatabaseManager::getInstance()->getAllUsers(true, true);
+		foreach ($users as $user){
+			$user->setLdbPoints($this->getUserPointsForMachGroup($user->getId(), $match_group_id));
+		}
+		usort($users, 'compareUserScores');
+		return $users;
 	}
 	
 	public static function getInstance(){

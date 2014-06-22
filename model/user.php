@@ -10,6 +10,10 @@ class User{
 	private $rank;
 	private $pass_hash;
 	private $user_hash;
+	private $is_active;
+	private $is_game_predictor;
+	
+	private $points_in_ldb;
 	
 	public static $s_rank_noraml_user = 0;
 	public static $s_rank_moderator = 10;
@@ -24,6 +28,10 @@ class User{
 		$this->rank = self::$s_rank_noraml_user;
 		$this->pass_hash = "";
 		$this->user_hash = "";
+		$this->is_active = 1;
+		$this->is_game_predictor = 1;
+		
+		$this->points_in_ldb = 0;
 	}
 	
 	public function __destruct(){
@@ -43,6 +51,8 @@ class User{
 		$this->rank = $db_entry["UserRank"];
 		$this->pass_hash = $db_entry["PasswordHash"];
 		$this->user_hash = $db_entry["UserHash"];
+		$this->is_active = $db_entry["Active"];
+		$this->is_game_predictor = $db_entry["Predictor"];
 	}
 	
 	public function getId(){
@@ -102,6 +112,22 @@ class User{
 		}else{
 			return false;
 		}
+	}
+	
+	public function isActive(){
+		return $this->is_active;
+	}
+	
+	public function isPredictor(){
+		return $this->is_game_predictor;
+	}
+	
+	public function setLdbPoints($points){
+		$this->points_in_ldb = $points;
+	}
+	
+	public function getLdbPoints(){
+		return $this->points_in_ldb;
 	}
 }
 

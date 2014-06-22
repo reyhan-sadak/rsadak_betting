@@ -1,6 +1,6 @@
 <?php
 
-require_once 'managers/databaseManager.php';
+//require_once 'managers/databaseManager.php';
 
 class FootballTeam{
 	

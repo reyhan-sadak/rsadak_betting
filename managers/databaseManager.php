@@ -1,7 +1,7 @@
 <?php
 
-require_once 'framework/medoo.php';
-require_once 'model/User.php';
+require_once 'framework/medoo.min.php';
+require_once 'model/user.php';
 require_once 'model/footballLeague.php';
 require_once 'model/footballTeam.php';
 require_once 'model/matchGroup.php';
@@ -29,7 +29,18 @@ class DatabaseManager{
 		
 	}
 	
-	public function getAllUsers(){
+	public function getAllUsers($is_active=null, $is_game_predictor=null){
+		$filter = array();
+		if($is_active && $is_game_predictor){
+			$filter_and = array();
+			$filter_and["Active"] = 1;
+			$filter_and["Predictor"] = 1;
+			$filter["AND"] = $filter_and;
+		}else if($is_active){
+			$filter["Active"] = 1;
+		}else if($is_game_predictor){
+			$filter["Prefictor"] = 1;
+		}
 		$datas = $this->database->select("Users", [
 				"ID",
 				"Name",
@@ -38,9 +49,11 @@ class DatabaseManager{
 				"UserHash",
 				"UserRank",
 				"UpdatedTime",
-				"CreatedTime"
-		
-				]);
+				"CreatedTime",
+				"Active",
+				"Predictor"
+				],
+				$filter);
 		$users_array = array();
 		foreach ($datas as $data){
 			$user = new User();
@@ -59,7 +72,9 @@ class DatabaseManager{
 				"UserHash",
 				"UserRank",
 				"UpdatedTime",
-				"CreatedTime"
+				"CreatedTime",
+				"Active",
+				"Predictor"
 				
 				], [
 				"ID" => (int)$user_id
@@ -71,7 +86,6 @@ class DatabaseManager{
 				return $user;
 			}
 		}
-		//echo "getUserById null ".$user_id;
 		return null;
 	}
 	
@@ -84,8 +98,10 @@ class DatabaseManager{
 				"UserHash",
 				"UserRank",
 				"UpdatedTime",
-				"CreatedTime"
-		
+				"CreatedTime",
+				"Active",
+				"Predictor"
+				
 				], [
 				"UserHash" => $hash_id
 				]);
@@ -109,7 +125,9 @@ class DatabaseManager{
 				"UserHash",
 				"UserRank",
 				"UpdatedTime",
-				"CreatedTime"
+				"CreatedTime",
+				"Active",
+				"Predictor"
 		
 				], [
 				"Email" => $email
@@ -444,7 +462,7 @@ class DatabaseManager{
 		return true;
 	}
 	
-	public function addNewUser($email, $password_hash, $name, $userHash, $rank){
+	public function addNewUser($email, $password_hash, $name, $userHash, $rank, $is_active, $is_game_predictor){
 		$datetime = date('Y-m-d H:i:s');
 		$last_user_id = $this->database->insert("Users",
 				[
@@ -453,10 +471,26 @@ class DatabaseManager{
 					"PasswordHash" => $password_hash,
 					"UserHash" => $userHash,
 					"UserRank" => $rank,
-					"UpdatedTime" => $datetime
+					"UpdatedTime" => $datetime,
+					"Active" => $is_active,
+					"Predictor" => $is_game_predictor
 				]);
 		
 		return $last_user_id;
+	}
+	
+	public function updatePasswordForUser($user_id, $new_password_hash){
+		$datetime = date('Y-m-d H:i:s');
+		$result = $this->database->update("Users",
+				[
+					"PasswordHash" => $new_password_hash,
+					"UpdatedTime" => $datetime
+				],
+				[
+					"ID" => (int)$user_id
+				]
+			);
+		return $result;
 	}
 	
 	public function addNewLeague($league_name, $creator_id){
