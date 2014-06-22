@@ -9,14 +9,14 @@ static $s_correct_result_winner_color = 'FFFF00';
 static $s_incorrect_result_color = 'FF0000';
 
 static $noUserControlPanel = array(
+			array("index.php", "Home"),
 			array("login.php", "Login"),
 			array("register.php", "Register")
 		);
 
 static $normalUserControlPanel = array(
 			array("logout.php", "Logout"),
-			array("changePassword.php", "Change Password"),
-			array("index.php", "Home")
+			array("changePassword.php", "Change Password")
 		);
 static $moderatorControlPanel = array(
 			// new content

@@ -115,11 +115,11 @@ class User{
 	}
 	
 	public function isActive(){
-		return $this->is_active;
+		return $this->is_active > 0;
 	}
 	
 	public function isPredictor(){
-		return $this->is_game_predictor;
+		return $this->is_game_predictor > 0;
 	}
 	
 	public function setLdbPoints($points){

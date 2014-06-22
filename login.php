@@ -16,6 +16,7 @@ function loginForm($email="", $userNameMessage="", $passwordMessage=""){
 redirectIfAuthorized();
 
 pageHeader();
+controlPanel();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	$email = $pass = "";

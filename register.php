@@ -17,6 +17,7 @@ function registerForm(){
 redirectIfAuthorized();
 
 pageHeader();
+controlPanel();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	$name_err = $email_err = $pass_err = $repeat_pass_err = "";
