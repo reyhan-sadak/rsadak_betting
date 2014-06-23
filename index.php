@@ -2,7 +2,7 @@
 
 require_once 'basePage.php';
 
-pageHeader();
+pageHeader('setLocalTime');
 addScripts(["functions"]);
 controlPanel();
 

@@ -34,6 +34,7 @@ function usersTable($users, $page_number, $page_entries){
 			}
 			if(!$users[$index]->isAdmin()){
 				echo '<th><button type="button" onclick="makeAdmin('.(int)$users[$index]->getId().')">Make Admin</button></th>';
+				echo '<th><button type="button" onclick="setPassword('.(int)$users[$index]->getId().')">Set Password</button></th>';
 			}
 			echo '</tr>';
 		}

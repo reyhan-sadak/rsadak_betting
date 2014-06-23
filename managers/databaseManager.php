@@ -341,7 +341,7 @@ class DatabaseManager{
 					break;
 						
 				case self::$MATCH_GROUP_STATUS_UPCOMING:
-					$filter["FromDate[>=]"] = $date;
+					$filter["FromDate[>]"] = $date;
 					break;
 				
 			}
@@ -587,7 +587,11 @@ class DatabaseManager{
 				"UpdatedTime" => $datetime
 				],
 				[
-				"MatchId" => $game_id
+					"AND" =>
+					[
+						"MatchId" => $game_id,
+						"CreatorId" => $creator_id
+					]
 				]
 		);
 		

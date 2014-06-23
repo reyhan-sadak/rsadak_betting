@@ -4,9 +4,11 @@ require_once 'utils/functions.php';
 
 static $scriptsFolder = "js";
 static $s_default_color = '#FFFFFF ';
-static $s_correct_result_color = '00FF00';
-static $s_correct_result_winner_color = 'FFFF00';
-static $s_incorrect_result_color = 'FF0000';
+static $s_correct_result_color = '#00FF00';
+static $s_correct_result_winner_color = '#FFFF00';
+static $s_incorrect_result_color = '#FF0000';
+
+date_default_timezone_set("UTC");
 
 static $noUserControlPanel = array(
 			array("index.php", "Home"),
@@ -36,7 +38,7 @@ static $adminControlPanel = array(
 			array("viewUsers.php", "View users")
 		);
 
-function pageHeader(){
+function pageHeader($on_load=null){
 	echo
 	'<html>
 	<header>
@@ -44,7 +46,11 @@ function pageHeader(){
 	<meta content="utf-8" http-equiv="encoding">
 	<link rel="stylesheet" type="text/css" href="resources/styles.css">
 	</header>
-	<body>';
+	<body ';
+	if($on_load != null){
+		echo 'onload="'.$on_load.'()"';
+	}
+	echo '>';
 	showHeaderMessage();
 }
 
@@ -187,7 +193,6 @@ function predictionTable($data, $is_other_user){
 	$games = $data["matches"];
 	$predictions = $data["predictions"];
 	$games_count = count($games);
-	$points = 0;
 	echo '<div id="gamesDiv" float="left">';
 	echo '<table class="predictionsTable" border=1>';
 	echo '<tr>';
@@ -203,11 +208,12 @@ function predictionTable($data, $is_other_user){
 		echo '<th>Action</th>';
 	}
 	echo '</tr>';
+	$dt = new DateTime();
 	for($index = 0; $index < $games_count; ++$index){
 		$game = $games[$index];
 		$prediction = $predictions[$index];
-		$dt = new DateTime();
 		$dt_match = DateTime::createFromFormat('Y-m-d H:i:s', $game->getDateAndTime());
+		$dt_match_formatted = $game->getDateAndTime();
 		$did_game_start = $dt >= $dt_match;
 		echo '<tr id="'.$game->getId().'">';
 		echo '<th>'.$game->getHostTeamName().'</th>';
@@ -221,16 +227,16 @@ function predictionTable($data, $is_other_user){
 				$guest_cell_value = $prediction->getGuestScore();
 				if(isScoreCorrect($game->getHostScore(), $game->getGuestScore(), $prediction->getHostScore(), $prediction->getGuestScore())){
 					$cell_color = $s_correct_result_color;
-					$points += 3;
 				}else if(isScoreWinnerCorrect($game->getHostScore(), $game->getGuestScore(), $prediction->getHostScore(), $prediction->getGuestScore())){
 					$cell_color = $s_correct_result_winner_color;
-					$points += 1;
+				}else if($is_other_user && !$did_game_start){
+					$cell_color = $s_default_color;
 				}else{
 					$cell_color = $s_incorrect_result_color;
 				}
 			}else{
-				$host_cell_value = "null";
-				$guest_cell_value = "null";
+				$host_cell_value = "&nbsp";
+				$guest_cell_value = "&nbsp";
 				if($did_game_start){
 					$cell_color = $s_incorrect_result_color;
 				}
@@ -251,7 +257,7 @@ function predictionTable($data, $is_other_user){
 		echo '<th id="guestScore" bgcolor="'.$cell_color.'">';
 		echo $guest_cell_value;
 		echo '</th>';
-		echo '<th>'.$game->getDateAndTime().'</th>';
+		echo '<th class="datetime">'.$dt_match_formatted.'</th>';
 		if($did_game_start == false && $is_other_user == false){
 			echo '<th><button type="button" onclick="updatePrediction('.$game->getId().')">Update</button></th>';
 		}

@@ -13,7 +13,7 @@ function compareUserScores($first, $second){
 		}
 		return -1;
 	}else{
-		return $first->getLdbPoints() - $second->getLdbPoints();
+		return $second->getLdbPoints() - $first->getLdbPoints();
 	}
 }
 
@@ -59,7 +59,7 @@ class SessionManager{
 		}
 	}
 	
-	private function hashPassword($rawPassword){
+	public function hashPassword($rawPassword){
 		return crypt($rawPassword);
 	}
 	
@@ -317,11 +317,11 @@ class SessionManager{
 			foreach ($matches as $match){
 				$host_score = $match->getHostScore();
 				$guest_score = $match->getGuestScore();
-				if($host_score && $guest_score){
+				if($host_score != null && $guest_score != null){
 					$prediction = DatabaseManager::getInstance()->getPredictionForGameOfUser($match->getId(), $user_id);
 					if($prediction){
 						$host_prediction = $prediction->getHostScore();
-						$guest_prediction = $prediction->getGuestPrediction();
+						$guest_prediction = $prediction->getGuestScore();
 						if(isScoreCorrect($host_score, $guest_score, $host_prediction, $guest_prediction)){
 							$score += 3;
 						}else if(isScoreWinnerCorrect($host_score, $guest_score, $host_prediction, $guest_prediction)){

@@ -11,6 +11,19 @@ function makeAdmin(user_id){
 	alert("Admin");
 }
 
+function setPassword(user_id){
+	new_password = prompt("Enter new password for user");
+	$request = "setPasswordForUser.php";
+	$data = {"new_pass": new_password, "user_id": user_id};
+	$.post($request, $data, function(data,status){
+			if(status=="success"){
+				alert("Password updated!" + data);
+			}else{
+				alert("password NOT updated!");
+			}
+		});
+}
+
 function addFootballGame(group_id){
 	location.href = "addFootballGame.php?group_id=" + group_id;
 }
@@ -77,6 +90,14 @@ function updateFootballGame(game_id){
 	}
 }
 
+function onUpdateFootballGameSuccess(){
+	
+}
+
+function onUpdateFootballGameError(){
+	
+}
+
 function updatePrediction(game_id){
 	var tables = document.getElementsByClassName("predictionsTable");
 	for(index = 0; index < tables.length; ++index){
@@ -112,5 +133,12 @@ function updatePrediction(game_id){
 				}
 			}
 		}
+	}
+}
+
+function setLocalTime(){
+	date_times = document.getElementsByClassName("datetime");
+	for(index = 0; index < date_times.length; ++index){
+		// TODO
 	}
 }

@@ -2,6 +2,12 @@
 
 require_once 'basePage.php';
 
+function userInfo($user){
+	echo '<div id="userInfo">';
+	echo $user->getName();
+	echo '</div>';
+}
+
 pageHeader();
 addScripts(["functions"]);
 controlPanel();
@@ -26,8 +32,14 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 					}
 					$data["predictions"] = $predictions;
 					$datas[] = $data;
+					
+					$leaderboard = array();
+					$leaderboard["group"] = $group;
+					$leaderboard["data"] = SessionManager::getInstance()->getUsersLeaderboardForMatchGroup($group->getId());
+					$leaderboards[] = $leaderboard;
 				}
-				predictionsTable($datas, ($user->getId() != $current_user->getId()));
+				userInfo($user);
+				predictionsTable($datas, ($user->getId() != $current_user->getId()), $leaderboards);
 			}
 		}
 	}
