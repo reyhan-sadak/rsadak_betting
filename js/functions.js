@@ -139,11 +139,8 @@ function updatePrediction(game_id){
 function setLocalTime(){
 	date_times = document.getElementsByClassName("datetime");
 	for(index = 0; index < date_times.length; ++index){
-		// TODO
 		gmt_value = date_times[index].innerHTML;
-		console.log(gmt_value);
 		var local_value = new Date(parseInt(gmt_value)*1000);
-		console.log(local_value);
 		date_times[index].innerHTML = local_value.toLocaleString();
 	}
 }
