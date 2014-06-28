@@ -69,9 +69,13 @@ function isScoreWinnerCorrect($host_score, $guest_score, $host_prediction, $gues
 	if($host_score == null || $guest_score == null){
 		return false;
 	}else{
-		$score_diff = $host_score - $guest_score;
-		$pred_diff = $host_prediction - $guest_prediction;
-		return ($score_diff * $pred_diff ) > 0;
+		if($host_score == 0 && $guest_score == 0){
+			return ($host_prediction == $guest_prediction);
+		}else{
+			$score_diff = $host_score - $guest_score;
+			$pred_diff = $host_prediction - $guest_prediction;
+			return ($score_diff * $pred_diff ) > 0;
+		}
 	}
 }
 

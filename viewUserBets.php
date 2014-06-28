@@ -8,7 +8,7 @@ function userInfo($user){
 	echo '</div>';
 }
 
-pageHeader();
+pageHeader('setLocalTime');
 addScripts(["functions"]);
 controlPanel();
 

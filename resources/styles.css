@@ -45,3 +45,7 @@ a:active {
 	background-color: #33CC66;
 	text-align: center;
 }
+
+#hostScore{
+	width: 30px;
+}

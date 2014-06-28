@@ -94,6 +94,11 @@ class FootballMatch{
 		return $this->date_time;
 	}
 	
+	public function getTimeEpoch(){
+		$dt = new DateTime($this->getDateAndTime());
+		return $dt->format('U');
+	}
+	
 	public function getMatchGroupId(){
 		return $this->match_group_id;
 	}

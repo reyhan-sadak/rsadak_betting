@@ -2,6 +2,8 @@
 
 require_once 'managers/sessionManager.php';
 
+date_default_timezone_set("UTC");
+
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 	if(isset($_POST["game_id"]) && isset($_POST["host_score"]) && isset($_POST["guest_score"])){
 		$match_id = $_POST["game_id"];
