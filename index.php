@@ -30,7 +30,7 @@ if($current_user){
 		$leaderboards[] = $leaderboard;
 	}
 		
-		predictionsTable($datas, false, $leaderboards);
+		predictionsTable($datas, false, $leaderboards, $current_user->getId());
 }
 
 pageFooter();

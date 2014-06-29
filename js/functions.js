@@ -141,6 +141,34 @@ function setLocalTime(){
 	for(index = 0; index < date_times.length; ++index){
 		gmt_value = date_times[index].innerHTML;
 		var local_value = new Date(parseInt(gmt_value)*1000);
-		date_times[index].innerHTML = local_value.toLocaleString();
+		var now = new Date();
+		if(sameDay(now, local_value)){
+			date_times[index].innerHTML = "Today, " + local_value.toLocaleTimeString();
+		}else if(yesterday(now, local_value)){
+			date_times[index].innerHTML = "Yesterday, " + local_value.toLocaleTimeString();
+		}
+		else if(tomorrow(now, local_value)){
+			date_times[index].innerHTML = "Tomorrow, " + local_value.toLocaleTimeString();
+		}else{
+			date_times[index].innerHTML = local_value.toLocaleString();
+		}
 	}
 }
+
+function sameDay( d1, d2 ){
+	  return d1.getUTCFullYear() == d2.getUTCFullYear() &&
+	         d1.getUTCMonth() == d2.getUTCMonth() &&
+	         d1.getUTCDate() == d2.getUTCDate();
+	}
+
+function yesterday( d1, d2 ){
+	  return d1.getUTCFullYear() == d2.getUTCFullYear() &&
+	         d1.getUTCMonth() == d2.getUTCMonth() &&
+	         d1.getUTCDate() == d2.getUTCDate() + 1;
+	}
+
+function tomorrow( d1, d2 ){
+	  return d1.getUTCFullYear() == d2.getUTCFullYear() &&
+	         d1.getUTCMonth() == d2.getUTCMonth() &&
+	         d1.getUTCDate() == d2.getUTCDate() - 1;
+	}

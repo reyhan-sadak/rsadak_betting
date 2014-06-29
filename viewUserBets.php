@@ -15,7 +15,11 @@ controlPanel();
 if($_SERVER["REQUEST_METHOD"] == "GET"){
 	$current_user = SessionManager::getInstance()->getCurrentUser();
 	if(isset($_GET["id"]) && $current_user){
-		$user = DatabaseManager::getInstance()->getUserById((int)$_GET["id"]);
+		$user_id = (int)$_GET["id"];
+		if($user_id == $current_user->getId()){
+			redirect();
+		}
+		$user = DatabaseManager::getInstance()->getUserById($user_id);
 		if($user){
 			if($user->isPredictor()){
 				$groups = getSortedMatchGroups();
@@ -39,7 +43,7 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 					$leaderboards[] = $leaderboard;
 				}
 				userInfo($user);
-				predictionsTable($datas, ($user->getId() != $current_user->getId()), $leaderboards);
+				predictionsTable($datas, ($user->getId() != $current_user->getId()), $leaderboards, $user->getId());
 			}
 		}
 	}

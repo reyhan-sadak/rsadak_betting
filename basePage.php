@@ -170,7 +170,7 @@ function getSortedMatchGroups(){
 	return $result;
 }
 
-function predictionsTable($datas, $is_other_user=false, $leaderboards=null){
+function predictionsTable($datas, $is_other_user=false, $leaderboards=null, $user_id=null){
 	for($index = 0; $index < count($datas); ++$index){
 		$data = $datas[$index];
 		$leaderboard = null;
@@ -179,7 +179,7 @@ function predictionsTable($datas, $is_other_user=false, $leaderboards=null){
 		}
 		echo '<div id="groupDiv">';
 		predictionTable($data, $is_other_user);
-		leaderboardTable($leaderboard);
+		leaderboardTable($leaderboard, $user_id);
 		echo '</div>';
 	}
 }
@@ -275,7 +275,7 @@ function predictionTable($data, $is_other_user){
 	echo '</div>';
 }
 
-function leaderboardTable($leaderboard){
+function leaderboardTable($leaderboard, $user_id=null){
 	if($leaderboard){
 		echo '<div id="leaderboardDiv" float="right">';
 		$leaderboardGroup = $leaderboard["group"];
@@ -296,7 +296,13 @@ function leaderboardTable($leaderboard){
 		foreach ($leaderboardData as $user){
 			echo '<tr>';
 			echo '<th>';
-			echo '<a href="viewUserBets.php?id='.$user->getId().'">'.$user->getName().'</a>';
+			if($user_id != null && $user_id != $user->getId()){
+				echo '<a href="viewUserBets.php?id='.$user->getId().'">'; 
+			}
+			echo $user->getName();
+			if($user_id != null && $user_id != $user->getId()){
+				echo '</a>';
+			}
 			echo '</th>';
 			echo '<th>';
 			echo $user->getLdbPoints();
