@@ -132,6 +132,17 @@ function addScripts($scriptnames){
 	global $scriptsFolder;
 	echo '<script src="'.$scriptsFolder.'/'.'jquery-2.1.1.min.js"></script>';
 	foreach ($scriptnames as $scriptname){
+		if($scriptname == 'functions'){
+			$current_user = SessionManager::getInstance()->getCurrentUser();
+			if($current_user){
+				if($current_user->isAdmin()){
+					echo '<script src="'.$scriptsFolder.'/'.$scriptname.'_admin.js"></script>';
+					echo '<script src="'.$scriptsFolder.'/'.$scriptname.'_moderator.js"></script>';
+				}else if($current_user->isModerator()){
+					echo '<script src="'.$scriptsFolder.'/'.$scriptname.'_moderator.js"></script>';
+				}
+			}
+		}
 		echo '<script src="'.$scriptsFolder.'/'.$scriptname.'.js"></script>';
 	}
 }
@@ -153,10 +164,29 @@ function datePickerScript($inputIds=[]){
 	';
 }
 
+function compareMatchGroups($left, $right){
+	$date_left = DateTime::createFromFormat('Y-m-d', $left->getFromDate());
+	$date_right = DateTime::createFromFormat('Y-m-d', $right->getFromDate());
+	if($date_left == $date_right){
+		if($first->getName() > $second->getName()){
+			return 1;
+		}
+		return -1;
+	}else if($date_right > $date_left){
+		return 1;
+	}
+	else{
+		return -1;
+	}
+}
+
 function getSortedMatchGroups(){
 	$started_groups = DatabaseManager::getInstance()->getAllGroups(DatabaseManager::$MATCH_GROUP_STATUS_STARTED);
 	$upcoming_groups = DatabaseManager::getInstance()->getAllGroups(DatabaseManager::$MATCH_GROUP_STATUS_UPCOMING);
 	$ended_groups = DatabaseManager::getInstance()->getAllGroups(DatabaseManager::$MATCH_GROUP_STATUS_ENDED);
+	usort($started_groups, 'compareMatchGroups');
+	usort($upcoming_groups, 'compareMatchGroups');
+	usort($ended_groups, 'compareMatchGroups');
 	$result = array();
 	foreach ($started_groups as $started_group){
 		$result[] = $started_group;
@@ -177,10 +207,16 @@ function predictionsTable($datas, $is_other_user=false, $leaderboards=null, $use
 		if($leaderboards){
 			$leaderboard = $leaderboards[$index];
 		}
-		echo '<div id="groupDiv">';
+		echo '<table id="listTable">';
+		echo '<tr>';
+		echo '<th>';
 		predictionTable($data, $is_other_user);
+		echo '</th>';
+		echo '<th>';
 		leaderboardTable($leaderboard, $user_id);
-		echo '</div>';
+		echo '</th>';
+		echo '</tr>';
+		echo '</table>';
 	}
 }
 
@@ -196,19 +232,21 @@ function predictionTable($data, $is_other_user){
 	$games = $data["matches"];
 	$predictions = $data["predictions"];
 	$games_count = count($games);
-	echo '<div id="gamesDiv" float="left">';
-	echo '<table class="predictionsTable" border=1 width="100%">';
+	echo '<div id="gamesDiv">';
+	echo '<table class="predictionsTable">';
 	echo '<tr>';
-	echo '<th colspan="6">'.$group->getName().'</th>';
+	echo '<th colspan="5">'.$group->getName().'</th>';
 	echo '</tr>';
 	echo '<tr>';
-	echo '<th>Host</th>';
-	echo '<th>Guest</th>';
-	echo '<th width="40px">Host goals</th>';
-	echo '<th width="40px">Guest goals</th>';
-	echo '<th>Local Date/Time</th>';
+	echo '<th class="with_border">Host</th>';
+	echo '<th class="with_border">Guest</th>';
+	echo '<th class="with_border" id="score_cell">Host prediction</th>';
+	echo '<th class="with_border" id="score_cell">Guest prediction</th>';
+	echo '<th class="with_border" id="score_cell">Host score</th>';
+	echo '<th class="with_border" id="score_cell">Guest score</th>';
+	echo '<th class="with_border" id="datetime_header">Date/Time(your timezone)</th>';
 	if(!$is_other_user){
-		echo '<th>Action</th>';
+		echo '<th>&nbsp</th>';
 	}
 	echo '</tr>';
 	for($index = 0; $index < $games_count; ++$index){
@@ -219,15 +257,22 @@ function predictionTable($data, $is_other_user){
 		$did_game_start = $dt >= $dt_match;
 		$is_game_result_pending = $did_game_start && $game->getHostScore() == null && $game->getGuestScore() == null;
 		echo '<tr id="'.$game->getId().'">';
-		echo '<th>'.$game->getHostTeamName().'</th>';
-		echo '<th>'.$game->getGuestTeamName().'</th>';
+		echo '<th class="with_border" id="team_name">'.$game->getHostTeamName().'</th>';
+		echo '<th class="with_border" id="team_name">'.$game->getGuestTeamName().'</th>';
 		$host_cell_value = '';
 		$guest_cell_value = '';
+		$host_score_value = '&nbsp';
+		$guest_score_value = '&nbsp';
 		$cell_color = $s_default_color;
 		if($did_game_start || $is_other_user){
 			if($prediction){
-				$host_cell_value = $prediction->getHostScore();
-				$guest_cell_value = $prediction->getGuestScore();
+				if($is_other_user && $did_game_start == false){
+					$host_cell_value = '?';
+					$guest_cell_value = '?';
+				}else{
+					$host_cell_value = $prediction->getHostScore();
+					$guest_cell_value = $prediction->getGuestScore();
+				}
 				if($is_game_result_pending){
 					$cell_color = $s_pending_result_color;
 				}else if(isScoreCorrect($game->getHostScore(), $game->getGuestScore(), $prediction->getHostScore(), $prediction->getGuestScore())){
@@ -240,8 +285,13 @@ function predictionTable($data, $is_other_user){
 					$cell_color = $s_incorrect_result_color;
 				}
 			}else{
-				$host_cell_value = "&nbsp";
-				$guest_cell_value = "&nbsp";
+				if($is_other_user && $did_game_start == false){
+					$host_cell_value = '?';
+					$guest_cell_value = '?';
+				}else{
+					$host_cell_value = "&nbsp";
+					$guest_cell_value = "&nbsp";
+				}
 				if($did_game_start){
 					$cell_color = $s_incorrect_result_color;
 				}
@@ -256,14 +306,26 @@ function predictionTable($data, $is_other_user){
 			$host_cell_value = '<input type="text" class="scoreInput" name="hostScore" value="'.$host_prediction.'" size="3" text-align="center">';
 			$guest_cell_value = '<input type="text" class="scoreInput" name="hostScore" value="'.$guest_prediction.'" size="3" text-align="center">';
 		}
-		echo '<th width="40px" id="hostScore" bgcolor="'.$cell_color.'">';
+		if($game->getHostScore() != null){
+			$host_score_value = $game->getHostScore();
+		}
+		if($game->getGuestScore() != null){
+			$guest_score_value = $game->getGuestScore();
+		}
+		echo '<th class="with_border" id="hostScore" bgcolor="'.$cell_color.'">';
 		echo $host_cell_value;
 		echo '</th>';
-		echo '<th width="40px" id="guestScore" bgcolor="'.$cell_color.'">';
+		echo '<th class="with_border" id="guestScore" bgcolor="'.$cell_color.'">';
 		echo $guest_cell_value;
 		echo '</th>';
 		
-		//echo '<th class="datetime">'.$dt_match_formatted.'</th>';
+		echo '<th class="with_border" id="score_cell">';
+		echo $host_score_value;
+		echo '</th>';
+		echo '<th class="with_border" id="score_cell">';
+		echo $guest_score_value;
+		echo '</th>';
+		
 		echo '<th class="datetime">'.$game->getTimeEpoch().'</th>';
 		if($did_game_start == false && $is_other_user == false){
 			echo '<th><button type="button" onclick="updatePrediction('.$game->getId().')">Update</button></th>';
@@ -271,7 +333,6 @@ function predictionTable($data, $is_other_user){
 		echo '</tr>';
 	}
 	echo '</table>';
-	//echo $points.' points!<br><br>';
 	echo '</div>';
 }
 
@@ -280,22 +341,23 @@ function leaderboardTable($leaderboard, $user_id=null){
 		echo '<div id="leaderboardDiv" float="right">';
 		$leaderboardGroup = $leaderboard["group"];
 		$leaderboardData = $leaderboard["data"];
-		echo '<table class="leaderboardTable" border=1>';
+		echo '<table class="leaderboardTable">';
 		echo '<tr>';
 		echo '<th colspan="2">';
-		echo $leaderboardGroup->getName();
+		//echo $leaderboardGroup->getName();
+		echo 'Ranking';
 		echo '</th>';
 		echo '</tr>';
 		echo '<tr>';
-		echo '<th>';
+		echo '<th class="ldb_name">';
 		echo 'Name';
 		echo '</th>';
-		echo '<th>';
+		echo '<th class="ldb_points">';
 		echo 'Points';
 		echo '</th>';
 		foreach ($leaderboardData as $user){
 			echo '<tr>';
-			echo '<th>';
+			echo '<th class="ldb_name">';
 			if($user_id != null && $user_id != $user->getId()){
 				echo '<a href="viewUserBets.php?id='.$user->getId().'">'; 
 			}
@@ -304,7 +366,7 @@ function leaderboardTable($leaderboard, $user_id=null){
 				echo '</a>';
 			}
 			echo '</th>';
-			echo '<th>';
+			echo '<th class="ldb_points">';
 			echo $user->getLdbPoints();
 			echo '</th>';
 			echo '</th>';

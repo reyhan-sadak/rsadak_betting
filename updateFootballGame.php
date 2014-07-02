@@ -8,11 +8,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 		$host_score = $_POST["host_score"];
 		$guest_score = $_POST["guest_score"];
 		
-		$result = SessionManager::getInstance()->updateGame($match_id, $host_score, $guest_score);
-		if($result){
-			echo json_encode($result->serializeToArray());
-		}else{
-			http_response_code(HttpStatus::$HTTP_STATUS_INTERNAL_SERVER_ERROR);
+		$current_user = SessionManager::getInstance()->getCurrentUser();
+		if($current_user){
+			if($current_user->isModerator()){
+				$result = SessionManager::getInstance()->updateGame($match_id, $host_score, $guest_score);
+				if($result){
+					echo json_encode($result->serializeToArray());
+				}else{
+					http_response_code(HttpStatus::$HTTP_STATUS_INTERNAL_SERVER_ERROR);
+				}
+			}else{
+				http_response_code(HttpStatus::$HTTP_STATUS_FORBIDDEN);
+			}	
+		}
+		else{
+			http_response_code(HttpStatus::$HTTP_STATUS_UNAUTHORIZED);
 		}
 	}else{
 		http_response_code(HttpStatus::$HTTP_STATUS_BAD_REQUEST);
