@@ -27,7 +27,7 @@ if($_SERVER["REQUEST_METHOD"] == "GET"){
 				foreach ($groups as $group){
 					$data = array();
 					$data["group"] = $group;
-					$matches = DatabaseManager::getInstance()->getMatchesByGroupId($group->getId());
+					$matches = DatabaseManager::getInstance()->getSortedMatchesByGroupId($group->getId());
 					$data["matches"] = $matches;
 					$predictions = array();
 					foreach($matches as $match){

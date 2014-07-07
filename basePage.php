@@ -164,22 +164,6 @@ function datePickerScript($inputIds=[]){
 	';
 }
 
-function compareMatchGroups($left, $right){
-	$date_left = DateTime::createFromFormat('Y-m-d', $left->getFromDate());
-	$date_right = DateTime::createFromFormat('Y-m-d', $right->getFromDate());
-	if($date_left == $date_right){
-		if($first->getName() > $second->getName()){
-			return 1;
-		}
-		return -1;
-	}else if($date_right > $date_left){
-		return 1;
-	}
-	else{
-		return -1;
-	}
-}
-
 function getSortedMatchGroups(){
 	$started_groups = DatabaseManager::getInstance()->getAllGroups(DatabaseManager::$MATCH_GROUP_STATUS_STARTED);
 	$upcoming_groups = DatabaseManager::getInstance()->getAllGroups(DatabaseManager::$MATCH_GROUP_STATUS_UPCOMING);

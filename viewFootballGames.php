@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 	}
 }
 
-$games = DatabaseManager::getInstance()->getMatchesByGroupId($group_id);
+$games = DatabaseManager::getInstance()->getSortedMatchesByGroupId($group_id);
 gamesTable($games, $group_id!=null);
 
 pageFooter();

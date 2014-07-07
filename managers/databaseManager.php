@@ -7,6 +7,7 @@ require_once 'model/footballTeam.php';
 require_once 'model/matchGroup.php';
 require_once 'model/footballMatch.php';
 require_once 'model/footballMatchPrediction.php';
+require_once 'utils/functions.php';
 
 class DatabaseManager{
 	
@@ -397,6 +398,12 @@ class DatabaseManager{
 			$football_matches_array[] = $football_match;
 		}
 		return $football_matches_array;
+	}
+	
+	public function getSortedMatchesByGroupId($group_id=null){
+		$matches = $this->getMatchesByGroupId($group_id);
+		usort($matches, 'compareMatchesByStartTime');
+		return $matches;
 	}
 	
 	public function getGameById($game_id){

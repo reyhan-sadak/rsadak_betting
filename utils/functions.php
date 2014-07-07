@@ -74,13 +74,42 @@ function isScoreWinnerCorrect($host_score, $guest_score, $host_prediction, $gues
 		}else{
 			$score_diff = $host_score - $guest_score;
 			$pred_diff = $host_prediction - $guest_prediction;
-			return ($score_diff * $pred_diff ) >= 0;
+			return ($score_diff * $pred_diff ) > 0;
 		}
 	}
 }
 
 function isScoreCorrect($host_score, $guest_score, $host_prediction, $guest_prediction){
 	return ($host_score == $host_prediction) && ($guest_score == $guest_prediction);
+}
+
+function compareMatchGroups($left, $right){
+	$date_left = DateTime::createFromFormat('Y-m-d', $left->getFromDate());
+	$date_right = DateTime::createFromFormat('Y-m-d', $right->getFromDate());
+	if($date_left == $date_right){
+		if($left->getName() > $right->getName()){
+			return 1;
+		}
+		return -1;
+	}else if($date_right > $date_left){
+		return 1;
+	}
+	else{
+		return -1;
+	}
+}
+
+function compareMatchesByStartTime($left, $right){
+	$datetime_left = $left->getTimeEpoch();
+	$datetime_right = $right->getTimeEpoch();
+	if($datetime_left == $datetime_right){
+		return 0;
+	}else if($datetime_left > $datetime_right){
+		return 1;
+	}
+	else{
+		return -1;
+	}
 }
 
 ?>
